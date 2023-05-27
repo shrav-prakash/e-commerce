@@ -1,0 +1,28 @@
+extends ../layouts/mainLayout.pug
+
+block append styles 
+    link(rel="stylesheet", href="/css/product.css")
+
+block content 
+    if products.length > 0
+        .grid
+            each product in products 
+                article.card.product-item
+                    .header.card__header
+                        .h1.product__title #{product.title}
+                    .card__image
+                        img(src= `${product.img}`, alt=`${product.title}`)
+                    .card__content
+                        h2.product__price $ #{product.price}
+                        p.product__description #{product.desc}
+                    div.card__actions
+                        a.btn(href=`/admin/edit-product/${product._id}`) Edit 
+                        a.btn(href=`/admin/delete-product/${product._id}`) Delete
+    else 
+        h1 No Products!
+
+
+    
+
+
+        

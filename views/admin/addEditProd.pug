@@ -1,0 +1,23 @@
+extends ../layouts/mainLayout.pug 
+
+block append styles 
+    link(rel="stylesheet", href="/css/product.css")
+    link(rel="stylesheet", href="/css/forms.css")
+
+block content 
+    main
+        form.product-form(action=`/admin/${mode}-product`, method="POST") 
+                .form-control
+                    if mode === "edit"
+                        input#title(type="hidden", name="id", value = `${product._id}`)
+                    .label(for="title") Title
+                    input#title(type="text", name="title", value = `${product.title}`)
+                    .label(for="img") Image Link
+                    input#title(type="text", name="img", value = `${product.img}`)
+                    .label(for="price") Price
+                    input#title(type="text", name="price", value = `${product.price}`)
+                    .label(for="desc") Description
+                    input#title(type="text", name="desc", value = `${product.desc}`)
+                button.btn(type="submit")= mode.charAt(0).toUpperCase() + mode.slice(1) + ' Product'
+
+

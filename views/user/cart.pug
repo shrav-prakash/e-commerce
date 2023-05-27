@@ -1,0 +1,32 @@
+extends ../layouts/mainLayout.pug
+
+block append styles 
+    link(rel="stylesheet", href="/css/product.css")
+
+block content   
+    if cart.length > 0
+        .grid
+            each item in cart 
+                article.card.product-item
+                    .header.card__header
+                        .h1.product__title #{item.title}
+                    .card__image
+                        img(src= `${item.img}`, alt=`${item.title}`)
+                    .card__content
+                        h2.product__price Price: $ #{item.price}
+                        .card__actions
+                            form(action="/cart", method="POST") 
+                                button.btn +
+                                input(type="hidden", name="prodId", value= `${item.id}`)
+                        h2.product__price Qty: #{item.qty}
+                        .card__actions 
+                            form(action="/delete-cart", method="POST") 
+                                button.btn -
+                                input(type="hidden", name="prodId", value= `${item.id}`)
+        h1.product__title Total Price: $ #{totCost}  
+        .card__actions 
+            form(action="/place-order", method="POST") 
+                button.btn Place Order
+                input(type="hidden", name="totCost", value = `${totCost}`)
+    else 
+        h1 No items in cart!
