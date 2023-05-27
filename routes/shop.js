@@ -18,8 +18,8 @@ router.post('/cart', productController.postCart);
 
 router.post('/delete-cart', productController.deleteCart);
 
-router.post('/place-order', productController.postOrders);
+router.get('/orders', productController.getOrders);
 
-router.get('/checkout', productController.getCheckout);
+router.post('/place-order', productController.postOrders);
 
 module.exports = router;

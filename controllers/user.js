@@ -114,10 +114,15 @@ exports.postCart = (req, res, next) => {
 }
 
 exports.getOrders = (req, res, next) => {
-    res.render('user/orders', {
-        pageTitle: 'Your Orders',
-        path: 'orders'
-    });
+    const newUser = new User(req.user._id, req.user.cart, req.user.orders);
+    newUser.getOrders().then(orders => {
+        console.log(orders);
+        res.render('user/orders', {
+            pageTitle: 'Your Orders',
+            path: 'orders',
+            orders: orders
+        });
+    })
 };
 
 exports.postOrders = (req, res, next) => {

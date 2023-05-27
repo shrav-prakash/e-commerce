@@ -76,6 +76,13 @@ class User {
         }
     }
 
+    getOrders() {
+        if (this.orders) {
+            const db = getDB();
+            return db.collection('orders').find({ "custId": this.id }).toArray()
+        }
+    }
+
     static findUserById(userId) {
         const db = getDB();
         return db.collection('users').findOne({ _id: new ObjectID(userId) }).then(res => {

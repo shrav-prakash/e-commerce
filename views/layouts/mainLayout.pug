@@ -21,8 +21,6 @@ html(lang="en")
                     li.main-header__item
                         a(href="/cart", class=((path==='cart') ? 'active' : '')) Cart
                     li.main-header__item
-                        a(href="/checkout", class=((path==='checkout') ? 'active' : '')) Checkout
-                    li.main-header__item
                         a(href="/admin/add-product", class=((path==='admin/addProduct') ? 'active' : '')) Add Product
                     li.main-header__item
                         a(href="/admin/admin-products", class=((path==='admin/prodList') ? 'active' : '')) Admin Product List
@@ -42,8 +40,6 @@ html(lang="en")
                     a(href="/orders", class=((path==='orders') ? 'active' : '')) Orders
                 li.mobile-nav__item
                     a(href="/cart", class=((path==='cart') ? 'active' : '')) Cart
-                li.mobile-nav__item
-                    a(href="/checkout", class=((path==='checkout') ? 'active' : '')) Checkout   
         main
             block content
         script(src="/js/main.js") 
