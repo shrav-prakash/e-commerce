@@ -1,9 +1,8 @@
 const mongoClient = require('mongodb').MongoClient;
-
 let db;
 
 exports.mongoConnect = (callBack) => {
-    mongoClient.connect('mongodb+srv://a:a@cluster0.3ctnjld.mongodb.net/shop').then(
+    mongoClient.connect(process.env.mongoURL).then(
         client => {
             console.log('Connected to database');
             db = client.db();

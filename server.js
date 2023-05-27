@@ -1,7 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const dotenv = require('dotenv');
 const mongoConnect = require('./util/db').mongoConnect;
+
+dotenv.config();
 
 const app = express();
 
