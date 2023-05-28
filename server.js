@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const dotenv = require('dotenv');
-const mongoConnect = require('./util/db').mongoConnect;
+const mongoose = require('mongoose');
 
 dotenv.config();
 
@@ -20,17 +20,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
-    User.findUserById("6470b6a392437f2758e9326e").then(user => {
+    User.findById("6470b6a392437f2758e9326e").then(user => {
         req.user = user
         next();
     }).catch(err => console.log(err));
 });
+
 app.use('/admin', adminRoutes);
 app.use(userRoutes);
 
 app.use(errorController.notFoundError);
 
-mongoConnect((client) => {
-    console.log("App is running on port 8080");
+mongoose.connect(process.env.mongoURL).then(() => {
+    console.log("App is currently running on port 8080");
     app.listen(8080);
-});
+}).catch(err => {
+    console.log(err);
+})

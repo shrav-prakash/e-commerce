@@ -1,25 +1,27 @@
 const Product = require('../models/product');
+const User = require('../models/user');
+const ObjectID = require('mongodb').ObjectId;
 
 exports.getAddProd = (req, res, next) => {
-    res.render('admin/addEditProd', { product: new Product('', '', '', ''), pageTitle: 'Add Product', path: 'admin/addProduct', mode: 'add' });
+    res.render('admin/addEditProd', { product: { title: '', img: '', price: '', desc: '' }, pageTitle: 'Add Product', path: 'admin/addProduct', mode: 'add' });
 }
 
 exports.postAddProd = (req, res, next) => {
-    const prod = new Product(req.body.title, req.body.img, req.body.price, req.body.desc, req.user);
-    prod.addProd().then(() => {
+    const prod = new Product({ title: req.body.title, img: req.body.img, price: req.body.price, desc: req.body.desc });
+    prod.save().then(() => {
         res.redirect('/admin/admin-products');
     }).catch(err => console.log(err));
 }
 
 exports.dispProds = (req, res, next) => {
-    Product.fetchProds(products => {
+    Product.find().then(products => {
         res.render('admin/productList', { products: products, pageTitle: 'Admin Product List', path: 'admin/prodList' });
     }).catch(err => console.log(err));
 }
 
 exports.getEditProd = (req, res, next) => {
     let prodId = req.params.prodId;
-    Product.getProdById(prodId, product => {
+    Product.findById(prodId).then(product => {
         console.log('Prod: ', product._id);
         if (product === [])
             return res.render('prodNotFound', { pageTitle: 'Product Not Found' })
@@ -28,19 +30,37 @@ exports.getEditProd = (req, res, next) => {
 }
 
 exports.postEditProd = (req, res, next) => {
-    let prod = req.body;
-    Product.editProduct(prod, () => {
-        res.redirect('/admin/admin-products');
+    Product.findById(req.body.id).then(prod => {
+        prod.title = req.body.title;
+        prod.img = req.body.img;
+        prod.desc = req.body.desc;
+        prod.price = req.body.price;
+        prod.save().then(() => {
+            res.redirect('/admin/admin-products');
+        })
     })
+
 }
 
 exports.deleteProd = (req, res, next) => {
-    let prodId = req.params.prodId;
-    Product.deleteProduct(prodId, isDeleted => {
-        if (isDeleted) {
-            return res.redirect('/admin/admin-products');
-        } else {
-            return res.render('prodNotFound', { pageTitle: 'Product Not Found' });
-        }
-    })
+    const prodId = req.params.prodId;
+    try {
+        Product.findOneAndDelete({ _id: new ObjectID(prodId) }).then(deletedProd => {
+            User.find().then(users => {
+                for (const user of users) {
+                    const index = user.cart.items.findIndex(item => item.productId.toString() === prodId);
+                    if (index > -1) {
+                        user.deleteFromCart(prodId);
+                    }
+                }
+                if (deletedProd) {
+                    return res.redirect('/admin/admin-products');
+                } else {
+                    return res.render('prodNotFound', { pageTitle: 'Product Not Found' });
+                }
+            })
+        });
+    } catch {
+        return res.render('prodNotFound', { pageTitle: 'Product Not Found' });
+    }
 }

@@ -1,8 +1,8 @@
 const Product = require("../models/product");
-const User = require("../models/user");
+const Order = require("../models/order");
 
 exports.getProds = (req, res, next) => {
-    Product.fetchProds(products => {
+    Product.find().then(products => {
         res.render('user/prodList', {
             products: products,
             pageTitle: 'Product List',
@@ -13,7 +13,7 @@ exports.getProds = (req, res, next) => {
 
 exports.getProdDetails = (req, res, next) => {
     const prodId = req.params.prodId;
-    Product.getProdById(prodId, prodDetails => {
+    Product.findById(prodId).then(prodDetails => {
         res.render('user/productDetails', {
             product: prodDetails,
             pageTitle: prodDetails.title,
@@ -23,7 +23,7 @@ exports.getProdDetails = (req, res, next) => {
 }
 
 exports.getShop = (req, res, next) => {
-    Product.fetchProds(products => {
+    Product.find().then(products => {
         res.render('user/index', {
             products: products,
             pageTitle: 'Shop',
@@ -33,20 +33,16 @@ exports.getShop = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-    Product.fetchProds(products => {
-        const user = req.user;
-        let cart = [];
-        let totCost = 0;
-        for (const product of products) {
-            const item = user.cart.items.find(item => item.productId.equals(product._id));
-            if (item) {
-                const price = (parseFloat(product.price) * parseInt(item.qty)).toFixed(2);
-                totCost += +price;
-                cart = [...cart, { id: item.productId, qty: item.qty, title: product.title, img: product.img, price: price.toString() }];
-                console.log(cart, totCost);
-            }
+    const user = req.user;
+    let cart = [];
+    let totCost = 0;
+    user.populate('cart.items.productId').then(() => {
+        for (const item of user.cart.items) {
+            const price = (parseFloat(item.productId.price) * parseInt(item.qty)).toFixed(2);
+            totCost += +price;
+            cart = [...cart, { id: item.productId._id, qty: item.qty, title: item.productId.title, img: item.productId.img, price: price }];
         }
-        totCost = totCost.toFixed(2).toString();
+        totCost = totCost.toFixed(2);
         return res.render('user/cart', {
             pageTitle: 'Your Cart',
             path: 'cart',
@@ -58,22 +54,17 @@ exports.getCart = (req, res, next) => {
 
 exports.deleteCart = (req, res, next) => {
     const prodId = req.body.prodId;
-    const newUser = new User(req.user._id, req.user.cart);
-    newUser.deleteFromCart(prodId).then(() => {
-        Product.fetchProds(products => {
-            let cart = [];
-            let totCost = 0;
-            for (const product of products) {
-                const item = req.user.cart.items.find(item => item.productId.equals(product._id));
-                if (item) {
-                    const price = (parseFloat(product.price) * parseInt(item.qty)).toFixed(2);
-                    totCost += +price;
-                    cart = [...cart, { id: item.productId, qty: item.qty, title: product.title, img: product.img, price: price.toString() }];
-                    console.log(cart, totCost);
-                }
+    const user = req.user;
+    user.deleteFromCart(prodId).then(() => {
+        let cart = [];
+        let totCost = 0;
+        user.populate('cart.items.productId').then(() => {
+            for (const item of user.cart.items) {
+                const price = (parseFloat(item.productId.price) * parseInt(item.qty)).toFixed(2);
+                totCost += +price;
+                cart = [...cart, { id: item.productId._id, qty: item.qty, title: item.productId.title, img: item.productId.img, price: price }];
             }
-            totCost = totCost.toFixed(2).toString();
-            console.log("At the end;", cart, totCost);
+            totCost = totCost.toFixed(2);
             return res.render('user/cart', {
                 pageTitle: 'Your Cart',
                 path: 'cart',
@@ -81,28 +72,22 @@ exports.deleteCart = (req, res, next) => {
                 totCost: totCost
             });
         })
-    });
+    })
 }
 
 exports.postCart = (req, res, next) => {
     const prodId = req.body.prodId;
-    const newUser = new User(req.user._id, req.user.cart);
-    console.log(newUser);
-    newUser.addToCart(prodId).then(() => {
-        Product.fetchProds(products => {
-            let cart = [];
-            let totCost = 0;
-            for (const product of products) {
-                const item = req.user.cart.items.find(item => item.productId.equals(product._id));
-                if (item) {
-                    const price = (parseFloat(product.price) * parseInt(item.qty)).toFixed(2);
-                    totCost += +price;
-                    cart = [...cart, { id: item.productId, qty: item.qty, title: product.title, img: product.img, price: price.toString() }];
-                    console.log(cart, totCost);
-                }
+    const user = req.user;
+    user.addToCart(prodId).then(() => {
+        let cart = [];
+        let totCost = 0;
+        user.populate('cart.items.productId').then(() => {
+            for (const item of user.cart.items) {
+                const price = (parseFloat(item.productId.price) * parseInt(item.qty)).toFixed(2);
+                totCost += +price;
+                cart = [...cart, { id: item.productId._id, qty: item.qty, title: item.productId.title, img: item.productId.img, price: price }];
             }
-            totCost = totCost.toFixed(2).toString();
-            console.log("At the end;", cart, totCost);
+            totCost = totCost.toFixed(2);
             return res.render('user/cart', {
                 pageTitle: 'Your Cart',
                 path: 'cart',
@@ -114,32 +99,36 @@ exports.postCart = (req, res, next) => {
 }
 
 exports.getOrders = (req, res, next) => {
-    const newUser = new User(req.user._id, req.user.cart, req.user.orders);
-    newUser.getOrders().then(orders => {
-        console.log(orders);
+    const user = req.user;
+    user.populate('orders').then(() => {
         res.render('user/orders', {
             pageTitle: 'Your Orders',
             path: 'orders',
-            orders: orders
+            orders: user.orders
         });
     })
 };
 
 exports.postOrders = (req, res, next) => {
     const user = req.user;
-    const newUser = new User(user._id, user.cart, user.orders);
-    Product.fetchProds(products => {
-        newUser.createOrder(products).then(() => {
-            req.user.cart = { "items": [] };
-            res.redirect('/');
-        });
-
-    });
+    user.populate('cart.items.productId', 'title price').then(() => {
+        let orderItems = [], price = 0;
+        for (const item of user.cart.items) {
+            orderItems.push({ id: item.productId._id, price: item.productId.price, title: item.productId.title, qty: item.qty });
+            price += item.productId.price * item.qty;
+        }
+        price = price.toFixed(2);
+        const order = new Order({ items: orderItems, price: price, custId: user._id });
+        order.save().then(result => {
+            if (user.orders) {
+                user.orders.push(result._id);
+            } else {
+                user.orders = [result._id];
+            }
+            user.cart = { "items": [] };
+            user.save().then(() => {
+                return res.redirect('/orders');
+            })
+        })
+    })
 }
-
-exports.getCheckout = (req, res, next) => {
-    res.render('user/checkout', {
-        pageTitle: 'Checkout',
-        path: 'checkout'
-    });
-};
