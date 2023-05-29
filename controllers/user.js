@@ -2,32 +2,38 @@ const Product = require("../models/product");
 const Order = require("../models/order");
 
 exports.getProds = (req, res, next) => {
+    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
     Product.find().then(products => {
         res.render('user/prodList', {
             products: products,
             pageTitle: 'Product List',
-            path: 'prodList'
+            path: 'prodList',
+            isLoggedIn: isLoggedIn
         });
     });
 };
 
 exports.getProdDetails = (req, res, next) => {
     const prodId = req.params.prodId;
+    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
     Product.findById(prodId).then(prodDetails => {
         res.render('user/productDetails', {
             product: prodDetails,
             pageTitle: prodDetails.title,
-            path: 'prodList'
+            path: 'prodList',
+            isLoggedIn: isLoggedIn
         })
     })
 }
 
 exports.getShop = (req, res, next) => {
+    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
     Product.find().then(products => {
         res.render('user/index', {
             products: products,
             pageTitle: 'Shop',
-            path: 'shop'
+            path: 'shop',
+            isLoggedIn: isLoggedIn
         });
     });
 };
@@ -36,6 +42,7 @@ exports.getCart = (req, res, next) => {
     const user = req.user;
     let cart = [];
     let totCost = 0;
+    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
     user.populate('cart.items.productId').then(() => {
         for (const item of user.cart.items) {
             const price = (parseFloat(item.productId.price) * parseInt(item.qty)).toFixed(2);
@@ -47,7 +54,8 @@ exports.getCart = (req, res, next) => {
             pageTitle: 'Your Cart',
             path: 'cart',
             cart: cart,
-            totCost: totCost
+            totCost: totCost,
+            isLoggedIn: isLoggedIn
         });
     })
 }
@@ -55,6 +63,7 @@ exports.getCart = (req, res, next) => {
 exports.deleteCart = (req, res, next) => {
     const prodId = req.body.prodId;
     const user = req.user;
+    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
     user.deleteFromCart(prodId).then(() => {
         let cart = [];
         let totCost = 0;
@@ -69,7 +78,8 @@ exports.deleteCart = (req, res, next) => {
                 pageTitle: 'Your Cart',
                 path: 'cart',
                 cart: cart,
-                totCost: totCost
+                totCost: totCost,
+                isLoggedIn: isLoggedIn
             });
         })
     })
@@ -78,6 +88,7 @@ exports.deleteCart = (req, res, next) => {
 exports.postCart = (req, res, next) => {
     const prodId = req.body.prodId;
     const user = req.user;
+    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
     user.addToCart(prodId).then(() => {
         let cart = [];
         let totCost = 0;
@@ -92,7 +103,8 @@ exports.postCart = (req, res, next) => {
                 pageTitle: 'Your Cart',
                 path: 'cart',
                 cart: cart,
-                totCost: totCost
+                totCost: totCost,
+                isLoggedIn: isLoggedIn
             });
         })
     });
@@ -100,11 +112,13 @@ exports.postCart = (req, res, next) => {
 
 exports.getOrders = (req, res, next) => {
     const user = req.user;
+    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
     user.populate('orders').then(() => {
         res.render('user/orders', {
             pageTitle: 'Your Orders',
             path: 'orders',
-            orders: user.orders
+            orders: user.orders,
+            isLoggedIn: isLoggedIn
         });
     })
 };

@@ -11,6 +11,8 @@ const app = express();
 app.set('view engine', 'pug');
 
 const User = require('./models/user');
+
+const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const userRoutes = require('./routes/shop');
 
@@ -28,6 +30,7 @@ app.use((req, res, next) => {
 
 app.use('/admin', adminRoutes);
 app.use(userRoutes);
+app.use(authRoutes);
 
 app.use(errorController.notFoundError);
 
