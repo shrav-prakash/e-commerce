@@ -1,22 +1,66 @@
 const User = require('../models/user');
+const bcrypt = require('bcryptjs');
 
 exports.getLogin = (req, res, next) => {
-    const isLoggedIn = req.session.isLoggedIn;
     res.render('auth/login', {
         path: 'login',
         pageTitle: 'Login',
-        isLoggedIn: isLoggedIn
+        isLoggedIn: false
     });
 }
 
 exports.postLogin = (req, res, next) => {
-    User.findById("6470b6a392437f2758e9326e").then(user => {
-        req.session.isLoggedIn = true;
-        req.session.user = user;
-        req.session.save(() => {
-            res.redirect('/');
+    User.findOne({ email: req.body.email }).then(user => {
+        if (!user) {
+            return res.redirect('/sign-up');
+        }
+        bcrypt.compare(req.body.password, user.password).then(result => {
+            if (!result) {
+                return res.redirect('/login');
+            }
+            req.session.isLoggedIn = true;
+            req.session.user = user;
+            req.session.save(() => {
+                return res.redirect('/');
+            });
+        }).catch(err => {
+            console.log(err);
+            return res.redirect('/login');
         })
     });
+}
+
+exports.getSignUp = (req, res, next) => {
+    res.render('auth/signup', {
+        path: 'signup',
+        pageTitle: 'Sign Up',
+        isLoggedIn: false
+    });
+}
+
+exports.postSignUp = (req, res, next) => {
+    const uname = req.body.uname;
+    const email = req.body.email;
+    const password = req.body.password;
+    User.findOne({ email: email }).then(user => {
+        if (user) {
+            return res.redirect('/sign-up');
+        }
+        bcrypt.hash(password, 12).then(hashedPassword => {
+            const newUser = new User({
+                username: uname,
+                email: email,
+                password: hashedPassword,
+                cart: { items: [] }
+            })
+            newUser.save().then(() => {
+                res.redirect('/login');
+            })
+        })
+    }).catch(err => {
+        console.log(err);
+    })
+
 }
 
 exports.postLogout = (req, res, next) => {
@@ -25,3 +69,4 @@ exports.postLogout = (req, res, next) => {
         res.redirect('/login');
     })
 }
+
