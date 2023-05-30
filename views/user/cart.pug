@@ -18,15 +18,18 @@ block content
                             form(action="/cart", method="POST") 
                                 button.btn +
                                 input(type="hidden", name="prodId", value= `${item.id}`)
+                                input(type="hidden", name="_csrf", value = `${csrfToken}`)
                         h2.product__price Qty: #{item.qty}
                         .card__actions 
                             form(action="/delete-cart", method="POST") 
                                 button.btn -
                                 input(type="hidden", name="prodId", value= `${item.id}`)
+                                input(type="hidden", name="_csrf", value = `${csrfToken}`)
         h1.product__title Total Price: $ #{totCost}  
         .card__actions 
             form(action="/place-order", method="POST") 
                 button.btn Place Order
+                input(type="hidden", name="_csrf", value = `${csrfToken}`)
                 input(type="hidden", name="totCost", value = `${totCost}`)
     else 
         h1 No items in cart!

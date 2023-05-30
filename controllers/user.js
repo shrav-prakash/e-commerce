@@ -2,38 +2,35 @@ const Product = require("../models/product");
 const Order = require("../models/order");
 
 exports.getProds = (req, res, next) => {
-    const isLoggedIn = req.session.isLoggedIn;
+
     Product.find().then(products => {
         res.render('user/prodList', {
             products: products,
             pageTitle: 'Product List',
-            path: 'prodList',
-            isLoggedIn: isLoggedIn
+            path: 'prodList'
         });
     });
 };
 
 exports.getProdDetails = (req, res, next) => {
     const prodId = req.params.prodId;
-    const isLoggedIn = req.session.isLoggedIn;
+
     Product.findById(prodId).then(prodDetails => {
         res.render('user/productDetails', {
             product: prodDetails,
             pageTitle: prodDetails.title,
-            path: 'prodList',
-            isLoggedIn: isLoggedIn
+            path: 'prodList'
         })
     })
 }
 
 exports.getShop = (req, res, next) => {
-    const isLoggedIn = req.session.isLoggedIn;
+
     Product.find().then(products => {
         res.render('user/index', {
             products: products,
             pageTitle: 'Shop',
-            path: 'shop',
-            isLoggedIn: isLoggedIn
+            path: 'shop'
         });
     });
 };
@@ -42,7 +39,7 @@ exports.getCart = (req, res, next) => {
     const user = req.user;
     let cart = [];
     let totCost = 0;
-    const isLoggedIn = req.session.isLoggedIn;
+
     user.populate('cart.items.productId').then(() => {
         for (const item of user.cart.items) {
             const price = (parseFloat(item.productId.price) * parseInt(item.qty)).toFixed(2);
@@ -54,8 +51,7 @@ exports.getCart = (req, res, next) => {
             pageTitle: 'Your Cart',
             path: 'cart',
             cart: cart,
-            totCost: totCost,
-            isLoggedIn: isLoggedIn
+            totCost: totCost
         });
     })
 }
@@ -63,7 +59,7 @@ exports.getCart = (req, res, next) => {
 exports.deleteCart = (req, res, next) => {
     const prodId = req.body.prodId;
     const user = req.user;
-    const isLoggedIn = req.session.isLoggedIn;
+
     user.deleteFromCart(prodId).then(() => {
         let cart = [];
         let totCost = 0;
@@ -78,8 +74,7 @@ exports.deleteCart = (req, res, next) => {
                 pageTitle: 'Your Cart',
                 path: 'cart',
                 cart: cart,
-                totCost: totCost,
-                isLoggedIn: isLoggedIn
+                totCost: totCost
             });
         })
     })
@@ -88,7 +83,7 @@ exports.deleteCart = (req, res, next) => {
 exports.postCart = (req, res, next) => {
     const prodId = req.body.prodId;
     const user = req.user;
-    const isLoggedIn = req.session.isLoggedIn;
+
     user.addToCart(prodId).then(() => {
         let cart = [];
         let totCost = 0;
@@ -103,8 +98,7 @@ exports.postCart = (req, res, next) => {
                 pageTitle: 'Your Cart',
                 path: 'cart',
                 cart: cart,
-                totCost: totCost,
-                isLoggedIn: isLoggedIn
+                totCost: totCost
             });
         })
     })
@@ -112,13 +106,12 @@ exports.postCart = (req, res, next) => {
 
 exports.getOrders = (req, res, next) => {
     const user = req.user;
-    const isLoggedIn = req.session.isLoggedIn;
+
     user.populate('orders').then(() => {
         res.render('user/orders', {
             pageTitle: 'Your Orders',
             path: 'orders',
-            orders: user.orders,
-            isLoggedIn: isLoggedIn
+            orders: user.orders
         });
     })
 };

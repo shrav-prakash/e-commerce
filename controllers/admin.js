@@ -3,8 +3,8 @@ const User = require('../models/user');
 const ObjectID = require('mongodb').ObjectId;
 
 exports.getAddProd = (req, res, next) => {
-    const isLoggedIn = req.session.isLoggedIn;
-    res.render('admin/addEditProd', { product: { title: '', img: '', price: '', desc: '' }, pageTitle: 'Add Product', path: 'admin/addProduct', mode: 'add', isLoggedIn: isLoggedIn });
+
+    res.render('admin/addEditProd', { product: { title: '', img: '', price: '', desc: '' }, pageTitle: 'Add Product', path: 'admin/addProduct', mode: 'add' });
 }
 
 exports.postAddProd = (req, res, next) => {
@@ -15,19 +15,19 @@ exports.postAddProd = (req, res, next) => {
 }
 
 exports.dispProds = (req, res, next) => {
-    const isLoggedIn = req.session.isLoggedIn;
+
     Product.find().then(products => {
-        res.render('admin/productList', { products: products, pageTitle: 'Admin Product List', path: 'admin/prodList', isLoggedIn: isLoggedIn });
+        res.render('admin/productList', { products: products, pageTitle: 'Admin Product List', path: 'admin/prodList' });
     }).catch(err => console.log(err));
 }
 
 exports.getEditProd = (req, res, next) => {
     let prodId = req.params.prodId;
-    const isLoggedIn = req.session.isLoggedIn;
+
     Product.findById(prodId).then(product => {
         if (product === [])
-            return res.render('prodNotFound', { pageTitle: 'Product Not Found', isLoggedIn: isLoggedIn })
-        res.render('admin/addEditProd', { product: product, pageTitle: 'Edit Product', path: 'admin/editProduct', mode: 'edit', isLoggedIn: isLoggedIn });
+            return res.render('prodNotFound', { pageTitle: 'Product Not Found' })
+        res.render('admin/addEditProd', { product: product, pageTitle: 'Edit Product', path: 'admin/editProduct', mode: 'edit' });
     });
 }
 
@@ -46,7 +46,7 @@ exports.postEditProd = (req, res, next) => {
 
 exports.deleteProd = (req, res, next) => {
     const prodId = req.params.prodId;
-    const isLoggedIn = req.session.isLoggedIn;
+
     try {
         Product.findOneAndDelete({ _id: new ObjectID(prodId) }).then(deletedProd => {
             User.find().then(users => {
@@ -59,11 +59,11 @@ exports.deleteProd = (req, res, next) => {
                 if (deletedProd) {
                     return res.redirect('/admin/admin-products');
                 } else {
-                    return res.render('prodNotFound', { pageTitle: 'Product Not Found', isLoggedIn: isLoggedIn });
+                    return res.render('prodNotFound', { pageTitle: 'Product Not Found' });
                 }
             })
         });
     } catch {
-        return res.render('prodNotFound', { pageTitle: 'Product Not Found', isLoggedIn: isLoggedIn });
+        return res.render('prodNotFound', { pageTitle: 'Product Not Found' });
     }
 }

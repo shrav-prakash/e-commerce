@@ -8,6 +8,7 @@ block content
     main
         form.product-form(action=`/admin/${mode}-product`, method="POST") 
                 .form-control
+                    input(type="hidden", name="_csrf", value = `${csrfToken}`)
                     if mode === "edit"
                         input#title(type="hidden", name="id", value = `${product._id}`)
                     .label(for="title") Title

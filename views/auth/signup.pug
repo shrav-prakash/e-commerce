@@ -6,7 +6,10 @@ block append styles
 
 block content 
     main 
+        if errorMsg 
+            .user-message.user-message--error #{errorMsg}
         form.login-form(action="/sign-up", method = "POST")
+            input(type="hidden", name="_csrf", value = `${csrfToken}`)
             .form-control 
                 label(for="email") Username 
                 input#email(type="text", name="uname")
