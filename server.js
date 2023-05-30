@@ -3,10 +3,13 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const mongoStore = require('connect-mongodb-session')(session);
 
 dotenv.config();
 
 const app = express();
+const store = new mongoStore({ uri: process.env.mongoURL, collection: 'sessions' });
 
 app.set('view engine', 'pug');
 
@@ -15,24 +18,26 @@ const User = require('./models/user');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const userRoutes = require('./routes/shop');
-
-const errorController = require('./controllers/errors');
+const errorRoutes = require('./routes/notFound');
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(session({ secret: process.env.secret, resave: false, saveUninitialized: false, store: store }));
 
 app.use((req, res, next) => {
-    User.findById("6470b6a392437f2758e9326e").then(user => {
+    if (!req.session.user) {
+        return next();
+    }
+    User.findById(req.session.user._id).then(user => {
         req.user = user
         next();
-    }).catch(err => console.log(err));
+    });
 });
 
 app.use('/admin', adminRoutes);
 app.use(userRoutes);
 app.use(authRoutes);
-
-app.use(errorController.notFoundError);
+app.use(errorRoutes);
 
 mongoose.connect(process.env.mongoURL).then(() => {
     console.log("App is currently running on port 8080");

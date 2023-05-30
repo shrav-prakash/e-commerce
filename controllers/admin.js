@@ -3,11 +3,17 @@ const User = require('../models/user');
 const ObjectID = require('mongodb').ObjectId;
 
 exports.getAddProd = (req, res, next) => {
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    if (!req.session.user) {
+        return res.redirect('/user-not-found');
+    }
+    const isLoggedIn = req.session.isLoggedIn;
     res.render('admin/addEditProd', { product: { title: '', img: '', price: '', desc: '' }, pageTitle: 'Add Product', path: 'admin/addProduct', mode: 'add', isLoggedIn: isLoggedIn });
 }
 
 exports.postAddProd = (req, res, next) => {
+    if (!req.session.user) {
+        return res.redirect('/user-not-found');
+    }
     const prod = new Product({ title: req.body.title, img: req.body.img, price: req.body.price, desc: req.body.desc });
     prod.save().then(() => {
         res.redirect('/admin/admin-products');
@@ -15,17 +21,22 @@ exports.postAddProd = (req, res, next) => {
 }
 
 exports.dispProds = (req, res, next) => {
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    if (!req.session.user) {
+        return res.redirect('/user-not-found');
+    }
+    const isLoggedIn = req.session.isLoggedIn;
     Product.find().then(products => {
         res.render('admin/productList', { products: products, pageTitle: 'Admin Product List', path: 'admin/prodList', isLoggedIn: isLoggedIn });
     }).catch(err => console.log(err));
 }
 
 exports.getEditProd = (req, res, next) => {
+    if (!req.session.user) {
+        return res.redirect('/user-not-found');
+    }
     let prodId = req.params.prodId;
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    const isLoggedIn = req.session.isLoggedIn;
     Product.findById(prodId).then(product => {
-        console.log('Prod: ', product._id);
         if (product === [])
             return res.render('prodNotFound', { pageTitle: 'Product Not Found', isLoggedIn: isLoggedIn })
         res.render('admin/addEditProd', { product: product, pageTitle: 'Edit Product', path: 'admin/editProduct', mode: 'edit', isLoggedIn: isLoggedIn });
@@ -33,6 +44,9 @@ exports.getEditProd = (req, res, next) => {
 }
 
 exports.postEditProd = (req, res, next) => {
+    if (!req.session.user) {
+        return res.redirect('/user-not-found');
+    }
     Product.findById(req.body.id).then(prod => {
         prod.title = req.body.title;
         prod.img = req.body.img;
@@ -46,8 +60,11 @@ exports.postEditProd = (req, res, next) => {
 }
 
 exports.deleteProd = (req, res, next) => {
+    if (!req.session.user) {
+        return res.redirect('/user-not-found');
+    }
     const prodId = req.params.prodId;
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    const isLoggedIn = req.session.isLoggedIn;
     try {
         Product.findOneAndDelete({ _id: new ObjectID(prodId) }).then(deletedProd => {
             User.find().then(users => {

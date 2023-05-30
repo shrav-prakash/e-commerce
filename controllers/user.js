@@ -2,7 +2,7 @@ const Product = require("../models/product");
 const Order = require("../models/order");
 
 exports.getProds = (req, res, next) => {
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    const isLoggedIn = req.session.isLoggedIn;
     Product.find().then(products => {
         res.render('user/prodList', {
             products: products,
@@ -15,7 +15,7 @@ exports.getProds = (req, res, next) => {
 
 exports.getProdDetails = (req, res, next) => {
     const prodId = req.params.prodId;
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    const isLoggedIn = req.session.isLoggedIn;
     Product.findById(prodId).then(prodDetails => {
         res.render('user/productDetails', {
             product: prodDetails,
@@ -27,7 +27,7 @@ exports.getProdDetails = (req, res, next) => {
 }
 
 exports.getShop = (req, res, next) => {
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    const isLoggedIn = req.session.isLoggedIn;
     Product.find().then(products => {
         res.render('user/index', {
             products: products,
@@ -42,7 +42,10 @@ exports.getCart = (req, res, next) => {
     const user = req.user;
     let cart = [];
     let totCost = 0;
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    const isLoggedIn = req.session.isLoggedIn;
+    if (!user) {
+        return res.redirect('/user-not-found');
+    }
     user.populate('cart.items.productId').then(() => {
         for (const item of user.cart.items) {
             const price = (parseFloat(item.productId.price) * parseInt(item.qty)).toFixed(2);
@@ -63,7 +66,10 @@ exports.getCart = (req, res, next) => {
 exports.deleteCart = (req, res, next) => {
     const prodId = req.body.prodId;
     const user = req.user;
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    const isLoggedIn = req.session.isLoggedIn;
+    if (!user) {
+        return res.redirect('/user-not-found');
+    }
     user.deleteFromCart(prodId).then(() => {
         let cart = [];
         let totCost = 0;
@@ -88,7 +94,10 @@ exports.deleteCart = (req, res, next) => {
 exports.postCart = (req, res, next) => {
     const prodId = req.body.prodId;
     const user = req.user;
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    const isLoggedIn = req.session.isLoggedIn;
+    if (!user) {
+        return res.redirect('/user-not-found');
+    }
     user.addToCart(prodId).then(() => {
         let cart = [];
         let totCost = 0;
@@ -107,12 +116,15 @@ exports.postCart = (req, res, next) => {
                 isLoggedIn: isLoggedIn
             });
         })
-    });
+    })
 }
 
 exports.getOrders = (req, res, next) => {
     const user = req.user;
-    const isLoggedIn = req.get('Cookie') ? req.get('Cookie').split('=')[1] : false;
+    const isLoggedIn = req.session.isLoggedIn;
+    if (!user) {
+        return res.redirect('/user-not-found');
+    }
     user.populate('orders').then(() => {
         res.render('user/orders', {
             pageTitle: 'Your Orders',
@@ -125,6 +137,9 @@ exports.getOrders = (req, res, next) => {
 
 exports.postOrders = (req, res, next) => {
     const user = req.user;
+    if (!user) {
+        return res.redirect('/user-not-found');
+    }
     user.populate('cart.items.productId', 'title price').then(() => {
         let orderItems = [], price = 0;
         for (const item of user.cart.items) {

@@ -15,38 +15,50 @@ html(lang="en")
                     li.main-header__item
                         a(href="/", class=((path==='shop') ? 'active' : '')) Shop
                     li.main-header__item
-                        a(href="/products", class=((path==='prodList') ? 'active' : '')) Product List 
-                    li.main-header__item
-                        a(href="/orders", class=((path==='orders') ? 'active' : '')) Orders
-                    li.main-header__item
-                        a(href="/cart", class=((path==='cart') ? 'active' : '')) Cart
+                        a(href="/products", class=((path==='prodList') ? 'active' : '')) Product List                     
                     if isLoggedIn
+                        li.main-header__item
+                            a(href="/orders", class=((path==='orders') ? 'active' : '')) Orders
+                        li.main-header__item
+                            a(href="/cart", class=((path==='cart') ? 'active' : '')) Cart
                         li.main-header__item
                             a(href="/admin/add-product", class=((path==='admin/addProduct') ? 'active' : '')) Add Product
                         li.main-header__item
                             a(href="/admin/admin-products", class=((path==='admin/prodList') ? 'active' : '')) Admin Product List
-                ul.main-header__item-list
-                    li.main-header__item
-                        a(href="/login", class=((path==='login') ? 'active' : '')) Login
+                unless isLoggedIn
+                    ul.main-header__item-list
+                        li.main-header__item
+                            a(href="/login", class=((path==='login') ? 'active' : '')) Login
+                else
+                    ul.main-header__item-list
+                        li.main-header__item 
+                            form(action="/logout", method="post")
+                                button(type = "Submit") Logout 
         nav.mobile-nav  
             ul.mobile-nav__item-list    
-                if isLoggedIn
-                    console.log(isLoggedIn)
-                    li.mobile-nav__item
-                        a(href="/admin/add-product", class=((path==='admin/addProduct') ? 'active' : '')) Add Product
-                    li.mobile-nav__item
-                        a(href="/admin/admin-products", class=((path==='admin/prodList') ? 'active' : '')) Admin Product List
                 li.mobile-nav__item
                     a(href="/", class=((path==='shop') ? 'active' : '')) Shop
                 li.mobile-nav__item
                     a(href="/products", class=((path==='prodList') ? 'active' : '')) Product List 
-                li.mobile-nav__item
-                    a(href="/orders", class=((path==='orders') ? 'active' : '')) Orders
-                li.mobile-nav__item
-                    a(href="/cart", class=((path==='cart') ? 'active' : '')) Cart
+                if isLoggedIn
+                    li.mobile-nav__item
+                        a(href="/orders", class=((path==='orders') ? 'active' : '')) Orders
+                    li.mobile-nav__item
+                        a(href="/cart", class=((path==='cart') ? 'active' : '')) Cart
+                    li.mobile-nav__item
+                        a(href="/admin/add-product", class=((path==='admin/addProduct') ? 'active' : '')) Add Product
+                    li.mobile-nav__item
+                        a(href="/admin/admin-products", class=((path==='admin/prodList') ? 'active' : '')) Admin Product List
+            unless isLoggedIn
             ul.mobile-nav__item-list 
                 li.mobile-nav_item 
-                        a(href="/login", class=((path==='login') ? 'active' : '')) Login
+                    a(href="/login", class=((path==='login') ? 'active' : '')) Login
+            else 
+            ul.mobile-nav__item-list 
+                li.mobile-nav_item  
+                    form(action="/logout", method="post")
+                        button(type = "Submit") Logout 
+
         main
             block content
         script(src="/js/main.js") 
