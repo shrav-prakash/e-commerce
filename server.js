@@ -30,29 +30,39 @@ app.use(csrfProtection);
 app.use(flash());
 
 app.use((req, res, next) => {
+    res.locals.isLoggedIn = req.session.isLoggedIn;
+    res.locals.csrfToken = req.csrfToken();
+    next();
+})
+
+app.use((req, res, next) => {
     if (!req.session.user) {
         return next();
     }
     User.findById(req.session.user._id).then(user => {
         req.user = user
         next();
+    }).catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     });
 });
-
-app.use((req, res, next) => {
-    res.locals.isLoggedIn = req.session.isLoggedIn;
-    res.locals.csrfToken = req.csrfToken();
-    next();
-})
 
 app.use('/admin', adminRoutes);
 app.use(userRoutes);
 app.use(authRoutes);
 app.use(errorRoutes);
 
+app.use((error, req, res, next) => {
+    res.status(500).render('errors/500', { pageTitle: 'Error Code - 500' });
+});
+
 mongoose.connect(process.env.mongoURL).then(() => {
     console.log("App is currently running on port 8080");
     app.listen(8080);
 }).catch(err => {
-    console.log(err);
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
 })

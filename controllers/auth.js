@@ -23,9 +23,6 @@ exports.getLogin = (req, res, next) => {
 
 exports.postLogin = (req, res, next) => {
     const errors = validationResult(req);
-
-    console.log(errors.array());
-
     if (!errors.isEmpty()) {
         return res.status(422).render(
             'auth/login', {
@@ -119,6 +116,10 @@ exports.postSignUp = (req, res, next) => {
         newUser.save().then(() => {
             res.redirect('/login');
         })
+    }).catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     });
 }
 
