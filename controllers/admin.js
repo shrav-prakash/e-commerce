@@ -5,7 +5,7 @@ const { validationResult } = require('express-validator');
 
 exports.getAddProd = (req, res, next) => {
     res.render('admin/addEditProd', {
-        product: { title: '', img: '', price: '', desc: '' },
+        product: { title: '', price: '', desc: '' },
         pageTitle: 'Add Product',
         path: 'admin/addProduct',
         mode: 'add',
@@ -15,10 +15,22 @@ exports.getAddProd = (req, res, next) => {
 }
 
 exports.postAddProd = (req, res, next) => {
+    if (!req.file) {
+        console.log(req.body);
+        return res.status(422).render('admin/addEditProd', {
+            product: { title: req.body.title, price: req.body.price, desc: req.body.desc },
+            pageTitle: 'Add Product',
+            path: 'admin/addProduct',
+            mode: 'add',
+            errorMsg: 'Attached file is not an image',
+            validationErrors: []
+        });
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(422).render('admin/addEditProd', {
-            product: { title: req.body.title, img: req.body.img, price: req.body.price, desc: req.body.desc },
+            product: { title: req.body.title, price: req.body.price, desc: req.body.desc },
             pageTitle: 'Add Product',
             path: 'admin/addProduct',
             mode: 'add',
@@ -26,7 +38,7 @@ exports.postAddProd = (req, res, next) => {
             validationErrors: errors.array()
         });
     }
-    const prod = new Product({ title: req.body.title, img: req.body.img, price: req.body.price, desc: req.body.desc });
+    const prod = new Product({ title: req.body.title, img: '\\' + req.file.path, price: req.body.price, desc: req.body.desc });
     prod.save().then(() => {
         res.redirect('/admin/admin-products');
     }).catch(err => {
@@ -71,7 +83,7 @@ exports.postEditProd = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(422).render('admin/addEditProd', {
-            product: { title: req.body.title, img: req.body.img, price: req.body.price, desc: req.body.desc, _id: req.body.id },
+            product: { title: req.body.title, price: req.body.price, desc: req.body.desc, _id: req.body.id },
             pageTitle: 'Edit Product',
             path: 'admin/editProduct',
             mode: 'edit',
@@ -80,9 +92,14 @@ exports.postEditProd = (req, res, next) => {
         });
     }
 
+    console.log(req.file);
+
     Product.findById(req.body.id).then(prod => {
         prod.title = req.body.title;
-        prod.img = req.body.img;
+        console.log(req.file);
+        if (req.file) {
+            prod.img = '\\' + req.file.path;
+        }
         prod.desc = req.body.desc;
         prod.price = req.body.price;
         prod.save().then(() => {

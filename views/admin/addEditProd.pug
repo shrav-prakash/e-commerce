@@ -8,19 +8,19 @@ block content
     main
         if errorMsg 
             .user-message.user-message--error #{errorMsg}
-        form.product-form(action=`/admin/${mode}-product`, method="POST") 
+        form.product-form(action=`/admin/${mode}-product`, method="POST", enctype = "multipart/form-data") 
                 .form-control
                     input(type="hidden", name="_csrf", value = `${csrfToken}`)
                     if mode === "edit"
                         input#title(type="hidden", name="id", value = `${product._id}`)
                     .label(for="title") Title
                     input#title(type="text", name="title", value = `${product.title}`, class = `${validationErrors.find(err => err.path === 'title') ? 'invalid' : ''}`)
-                    .label(for="img") Image Link
-                    input#title(type="text", name="img", value = `${product.img}`, class = `${validationErrors.find(err => err.path === 'img') ? 'invalid' : ''}`)
+                    .label(for="img") Image 
+                    input#img(type="file", name="img")
                     .label(for="price") Price
-                    input#title(type="text", name="price", value = `${product.price}`, class = `${validationErrors.find(err => err.path === 'price') ? 'invalid' : ''}`)
+                    input#price(type="text", name="price", value = `${product.price}`, class = `${validationErrors.find(err => err.path === 'price') ? 'invalid' : ''}`)
                     .label(for="desc") Description
-                    input#title(type="text", name="desc", value = `${product.desc}`, class = `${validationErrors.find(err => err.path === 'desc') ? 'invalid' : ''}`)
+                    input#desc(type="text", name="desc", value = `${product.desc}`, class = `${validationErrors.find(err => err.path === 'desc') ? 'invalid' : ''}`)
                 button.btn(type="submit")= mode.charAt(0).toUpperCase() + mode.slice(1) + ' Product'
 
 
