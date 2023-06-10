@@ -2,6 +2,7 @@ const Product = require('../models/product');
 const User = require('../models/user');
 const ObjectID = require('mongodb').ObjectId;
 const { validationResult } = require('express-validator');
+const fileHelper = require('../util/file');
 
 exports.getAddProd = (req, res, next) => {
     res.render('admin/addEditProd', {
@@ -98,6 +99,7 @@ exports.postEditProd = (req, res, next) => {
         prod.title = req.body.title;
         console.log(req.file);
         if (req.file) {
+            fileHelper.deleteFile(prod.img);
             prod.img = '\\' + req.file.path;
         }
         prod.desc = req.body.desc;
@@ -118,6 +120,7 @@ exports.deleteProd = (req, res, next) => {
 
     try {
         Product.findOneAndDelete({ _id: new ObjectID(prodId) }).then(deletedProd => {
+            fileHelper.deleteFile(deletedProd.img);
             User.find().then(users => {
                 for (const user of users) {
                     const index = user.cart.items.findIndex(item => item.productId.toString() === prodId);

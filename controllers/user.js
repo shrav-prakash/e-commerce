@@ -1,5 +1,9 @@
 const Product = require("../models/product");
 const Order = require("../models/order");
+const fs = require('fs');
+const path = require('path');
+const user = require("../models/user");
+const pdfDoc = require('pdfkit');
 
 exports.getProds = (req, res, next) => {
 
@@ -139,3 +143,38 @@ exports.postOrders = (req, res, next) => {
         })
     })
 }
+
+exports.getInvoice = (req, res, next) => {
+    const orderId = req.params.orderId;
+    const invoiceName = 'invoice-' + orderId + '.pdf';
+    const invoicePath = path.join('data', 'invoices', invoiceName);
+    Order.findById(orderId).then(order => {
+        if (order) {
+            if (order.custId.toString() === req.user._id.toString()) {
+                const invoice = new pdfDoc();
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', 'inline; filename="' + invoiceName + '"');
+                invoice.pipe(fs.createWriteStream(invoicePath));
+                invoice.pipe(res);
+                const header = 'Order ID - ' + orderId;
+                invoice.fontSize(10).text(header, { align: 'left' }).moveDown().moveDown();
+                invoice.fontSize(16).text('INVOICE', { align: 'center' }).moveDown();
+                invoice.text('---------------------------------------------', { align: 'center' }).moveDown().moveDown();
+                for (const item of order.items) {
+                    const iteminfo = item.title + ' x ' + item.qty;
+                    const itemprice = '- $' + item.price * item.qty;
+                    invoice.fontSize(12).text(iteminfo, { align: 'left', continued: true }).text(itemprice, { align: 'right' }).moveDown();
+                }
+                const totPrice = 'Total price - $' + order.price;
+                invoice.text(totPrice, { align: 'right' });
+                invoice.end();
+            } else {
+                return next(new Error('Unauthorized user'));
+            }
+        } else {
+            return next(new Error('Invalid order ID'));
+        }
+    }).catch(err => {
+        return next(err);
+    })
+};
