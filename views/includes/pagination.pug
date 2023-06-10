@@ -1,0 +1,10 @@
+section.pagination  
+    - var n = 1;
+    if hasPrevPage
+        a(href=`?page=1`) <<
+        a(href=`?page=${prevPage}`) <
+    while n <= lastPage
+        a(href=`?page=${n}` class=((n===+currPage) ? 'active' : '')) #{n++} 
+    if hasNextPage  
+        a(href=`?page=${nextPage}`) >
+        a(href=`?page=${lastPage}`) >>

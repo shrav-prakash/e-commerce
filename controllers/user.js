@@ -6,13 +6,29 @@ const user = require("../models/user");
 const pdfDoc = require('pdfkit');
 
 exports.getProds = (req, res, next) => {
-
-    Product.find().then(products => {
-        res.render('user/prodList', {
-            products: products,
-            pageTitle: 'Product List',
-            path: 'prodList'
+    let numProds, page = req.query.page;
+    if (!page) {
+        page = 1;
+    }
+    Product.find().count().then(numItems => {
+        numProds = numItems;
+        Product.find().skip((page - 1) * process.env.ITEMS_PER_PAGE).limit(process.env.ITEMS_PER_PAGE).then(products => {
+            return res.render('user/prodList', {
+                products: products,
+                pageTitle: 'Product List',
+                path: 'prodList',
+                hasNextPage: process.env.ITEMS_PER_PAGE * page < numProds,
+                hasPrevPage: page > 1,
+                nextPage: +page + 1,
+                prevPage: +page - 1,
+                currPage: page,
+                lastPage: Math.ceil(numProds / process.env.ITEMS_PER_PAGE)
+            });
         });
+    }).catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     });
 };
 
@@ -29,13 +45,29 @@ exports.getProdDetails = (req, res, next) => {
 }
 
 exports.getShop = (req, res, next) => {
-
-    Product.find().then(products => {
-        res.render('user/index', {
-            products: products,
-            pageTitle: 'Shop',
-            path: 'shop'
+    let numProds, page = req.query.page;
+    if (!page) {
+        page = 1;
+    }
+    Product.find().count().then(numItems => {
+        numProds = numItems;
+        Product.find().skip((page - 1) * process.env.ITEMS_PER_PAGE).limit(process.env.ITEMS_PER_PAGE).then(products => {
+            return res.render('user/index', {
+                products: products,
+                pageTitle: 'Shop',
+                path: 'shop',
+                hasNextPage: process.env.ITEMS_PER_PAGE * page < numProds,
+                hasPrevPage: page > 1,
+                nextPage: +page + 1,
+                prevPage: +page - 1,
+                currPage: page,
+                lastPage: Math.ceil(numProds / process.env.ITEMS_PER_PAGE)
+            });
         });
+    }).catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     });
 };
 

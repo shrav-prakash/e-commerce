@@ -19,6 +19,7 @@ block content
                         a.btn(href=`/products/${product._id}`) Details
                     if isLoggedIn
                         include ../includes/addToCart.pug
+        include ../includes/pagination.pug
     else 
         h1 No Products!
 

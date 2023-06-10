@@ -17,6 +17,7 @@ block content
                         p.product__description #{product.desc}
                     if isLoggedIn
                         include ../includes/addToCart.pug
+        include ../includes/pagination.pug  
     else 
         h1 No Products!
 

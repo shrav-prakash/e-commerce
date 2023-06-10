@@ -18,6 +18,7 @@ block content
                     div.card__actions
                         a.btn(href=`/admin/edit-product/${product._id}`) Edit 
                         a.btn(href=`/admin/delete-product/${product._id}`) Delete
+        include ../includes/pagination.pug
     else 
         h1 No Products!
 

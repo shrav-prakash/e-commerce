@@ -17,7 +17,6 @@ exports.getAddProd = (req, res, next) => {
 
 exports.postAddProd = (req, res, next) => {
     if (!req.file) {
-        console.log(req.body);
         return res.status(422).render('admin/addEditProd', {
             product: { title: req.body.title, price: req.body.price, desc: req.body.desc },
             pageTitle: 'Add Product',
@@ -50,8 +49,25 @@ exports.postAddProd = (req, res, next) => {
 }
 
 exports.dispProds = (req, res, next) => {
-    Product.find().then(products => {
-        res.render('admin/productList', { products: products, pageTitle: 'Admin Product List', path: 'admin/prodList' });
+    let numProds, page = req.query.page;
+    if (!page) {
+        page = 1;
+    }
+    Product.find().count().then(numItems => {
+        numProds = numItems;
+        Product.find().skip((page - 1) * process.env.ITEMS_PER_PAGE).limit(process.env.ITEMS_PER_PAGE).then(products => {
+            return res.render('admin/productList', {
+                products: products,
+                pageTitle: 'Admin Product List',
+                path: 'admin/prodList',
+                hasNextPage: process.env.ITEMS_PER_PAGE * page < numProds,
+                hasPrevPage: page > 1,
+                nextPage: +page + 1,
+                prevPage: +page - 1,
+                currPage: page,
+                lastPage: Math.ceil(numProds / process.env.ITEMS_PER_PAGE)
+            });
+        });
     }).catch(err => {
         const error = new Error(err);
         error.httpStatusCode = 500;
@@ -93,11 +109,8 @@ exports.postEditProd = (req, res, next) => {
         });
     }
 
-    console.log(req.file);
-
     Product.findById(req.body.id).then(prod => {
         prod.title = req.body.title;
-        console.log(req.file);
         if (req.file) {
             fileHelper.deleteFile(prod.img);
             prod.img = '\\' + req.file.path;
